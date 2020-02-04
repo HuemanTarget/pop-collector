@@ -18,8 +18,9 @@
           <li><a href="/" class="left brand-logo">&nbsp;&nbsp;PopCollector</a></li>
         </ul>
         <ul class="right">
-          <li><a href="/about">About</a></li>
-          <li><a href="/pops">View All My Pops</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="{% url 'pops_create' %}">Add a Pop</a></li>
+          <li><a href="{% url 'index' %}">View All My Pops</a></li>
         </ul>
       </div>
     </nav>

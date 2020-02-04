@@ -1,4 +1,6 @@
+from djmoney.models.fields import MoneyField
 from django.db import models
+from django.urls import reverse
 
 # Create your models here.
 class Pop(models.Model):
@@ -9,3 +11,6 @@ class Pop(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('detail', kwargs={'pop_id': self.id})

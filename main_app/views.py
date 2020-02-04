@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Pop
 from django.http import HttpResponse
 
@@ -16,7 +17,19 @@ from django.http import HttpResponse
 #   Pop('Black Widow', 'Movies', 'Black Widow from the Avengers movies.', 15)
 # ]
 
+class PopCreate(CreateView):
+  model = Pop
+  fields = '__all__'
+  success_url = '/pops/'
 
+class PopUpdate(UpdateView):
+  model = Pop
+  # Let's disallow the renaming of a cat by excluding the name field!
+  fields = ['category', 'description', 'price']
+
+class PopDelete(DeleteView):
+  model = Pop
+  success_url = '/pops/'
 
 
 def home(request):
@@ -31,5 +44,5 @@ def pops_index(request):
     return render(request, 'pops/index.html', { 'pops': pops })
 
 def pops_detail(request, pop_id):
-  pop = Pop.objects.get(id=pop_id)
-  return render(request, 'pops/detail.html', { 'pop': pop })
+    pop = Pop.objects.get(id=pop_id)
+    return render(request, 'pops/detail.html', { 'pop': pop })
