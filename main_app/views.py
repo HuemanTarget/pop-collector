@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from .models import Pop
+from .forms import DetailForm
 from django.http import HttpResponse
 
 # Create your views here.
@@ -44,5 +45,22 @@ def pops_index(request):
     return render(request, 'pops/index.html', { 'pops': pops })
 
 def pops_detail(request, pop_id):
-    pop = Pop.objects.get(id=pop_id)
-    return render(request, 'pops/detail.html', { 'pop': pop })
+  pop = Pop.objects.get(id=pop_id)
+  # instantiate FeedingForm to be rendered in the template
+  detail_form = DetailForm()
+  return render(request, 'pops/detail.html', {
+    # include the cat and feeding_form in the context
+    'pop': pop, 'detail_form': detail_form
+  })
+
+def add_detail(request, pop_id):
+	# create the ModelForm using the data in request.POST
+  form = DetailForm(request.POST)
+  # validate the form
+  if form.is_valid():
+    # don't save the form to the db until it
+    # has the cat_id assigned
+    new_detail = form.save(commit=False)
+    new_detail.pop_id = pop_id
+    new_detail.save()
+  return redirect('detail', pop_id=pop_id)

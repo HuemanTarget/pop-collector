@@ -3,17 +3,59 @@
 
 <h1>Pop Details</h1>
 
-<div class="card">
-  <div class="card-content">
-    <span class="card-title">{{ pop.name }}</span>
-    <p>Category: {{ pop.category }}</p>
-    <p>Description: {{ pop.description }}</p>
-    <p>Price: ${{ pop.price }}</p>
+<div class="row">
+  <div class="col s6">
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">{{ pop.name }}</span>
+        <p>Category: {{ pop.category }}</p>
+        <p>Description: {{ pop.description }}</p>
+        <p>Price: {{ pop.price }}</p>
+      </div>
+      <div class="card-action">
+        <a href="{% url 'pops_update' pop.id %}">Edit</a>
+        <a href="{% url 'pops_delete' pop.id %}">Delete</a>
+      </div>
+    </div>
   </div>
-  <div class="card-action">
-    <a href="{% url 'pops_update' pop.id %}">Edit</a>
-    <a href="{% url 'pops_delete' pop.id %}">Delete</a>
+  <div class="col s6">
+    <form action="{% url 'add_detail' pop.id %}" method="post">
+      {% csrf_token %}
+      {{ detail_form.as_p }}
+      <input type="submit" class="btn" value="Add Detail">
+    </form>
+    <br>
+    {% if pop.detail_entered %}
+      <div class="card-panel teal-text center-align">{{pop.name}} needs details entered above</div>
+    {% else %}
+      <div class="card-panel red-text center-align">{{pop.name}} has more details to enter</div>
+    {% endif %}
+    <table class="striped">
+      <thead>
+        <tr><th>Date</th><th>Item Number</th><th>Brand</th></tr>
+      </thead>
+      <tbody>
+        {% for detail in pop.detail_set.all %}
+          <tr>
+            <td>{{detail.date}}</td>
+            <td>{{detail.item_number}}</td>
+            <td>{{detail.get_brand_display}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
+<script>
+  let dateEl = document.getElementById('id_date');
+  M.Datepicker.init(dateEl, {
+    format: 'yyyy-mm-dd',
+    defaultDate: new Date(),
+    setDefaultDate: true,
+    autoClose: true
+  });
 
+  let selectEl = document.getElementById('id_brand');
+  M.FormSelect.init(selectEl);
+</script>
 {% endblock %}
