@@ -11,12 +11,22 @@ BRANDS = (
     ('H', 'Hikari')
 )
 
+class Accessory(models.Model):
+    name = models.CharField(max_length=100)
+    color = models.CharField(max_length=15)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse('accessory_detail', kwargs={'pk': self.id})
 
 class Pop(models.Model):
     name = models.CharField(max_length=100)
     category = models.CharField(max_length=100)
     description = models.CharField(max_length=400)
     price = models.IntegerField()
+    accessorys = models.ManyToManyField(Accessory)
 
     def __str__(self):
         return self.name
@@ -43,4 +53,11 @@ class Detail(models.Model):
     
     class Meta:
         ordering = ['-date']
+
+class Photo(models.Model):
+    url = models.CharField(max_length=200)
+    pop = models.ForeignKey(Pop, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Photo for pop_id: {self.pop_id} @{self.url}"
 
