@@ -2,6 +2,7 @@ from djmoney.models.fields import MoneyField
 from django.db import models
 from django.urls import reverse
 from datetime import date
+from django.contrib.auth.models import User
 
 # Create your models here.
 BRANDS = (
@@ -27,6 +28,7 @@ class Pop(models.Model):
     description = models.CharField(max_length=400)
     price = models.IntegerField()
     accessorys = models.ManyToManyField(Accessory)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name

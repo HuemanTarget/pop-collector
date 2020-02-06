@@ -17,4 +17,5 @@ urlpatterns = [
     path('accessory/create/', views.AccessoryCreate.as_view(), name='accessory_create'),
     path('accessory/<int:pk>/update/', views.AccessoryUpdate.as_view(), name='accessory_update'),
     path('accessory/<int:pk>/delete/', views.AccessoryDelete.as_view(), name='accessory_delete'),
+    path('accounts/signup/', views.signup, name='signup'),
 ]

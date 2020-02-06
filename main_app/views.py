@@ -1,5 +1,9 @@
 from django.shortcuts import render, redirect
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 import uuid
 import boto3
 from .models import Pop, Accessory, Photo
@@ -24,9 +28,16 @@ BUCKET = 'popcollector'
 #   Pop('Black Widow', 'Movies', 'Black Widow from the Avengers movies.', 15)
 # ]
 
-class PopCreate(CreateView):
+class PopCreate(LoginRequiredMixin, CreateView):
   model = Pop
   fields = '__all__'
+  # This inherited method is called when a
+  # valid cat form is being submitted
+  def form_valid(self, form):
+    # Assign the logged in user (self.request.user)
+    form.instance.user = self.request.user  # form.instance is the cat
+    # Let the CreateView do its job as usual
+    return super().form_valid(form)
   success_url = '/pops/'
 
 class PopUpdate(UpdateView):
@@ -40,16 +51,19 @@ class PopDelete(DeleteView):
 
 
 def home(request):
-    return HttpResponse('<h1>Hello /ᐠ｡‸｡ᐟ\ﾉ</h1>')
+    return render(request, 'home.html')
 
 def about(request):
     # return HttpResponse('<h1>About The Pop Collector</h1>')
     return render(request, 'about.html')
 
+@login_required
 def pops_index(request):
-    pops = Pop.objects.all()
+    pops = Pop.objects.filter(user=request.user)
+    # pops = Pop.objects.all()
     return render(request, 'pops/index.html', { 'pops': pops })
 
+@login_required
 def pops_detail(request, pop_id):
   pop = Pop.objects.get(id=pop_id)
   # instantiate FeedingForm to be rendered in the template
@@ -61,6 +75,7 @@ def pops_detail(request, pop_id):
     'accessorys': accessorys_pop_doesnt_have
   })
 
+@login_required
 def add_detail(request, pop_id):
 	# create the ModelForm using the data in request.POST
   form = DetailForm(request.POST)
@@ -73,14 +88,17 @@ def add_detail(request, pop_id):
     new_detail.save()
   return redirect('detail', pop_id=pop_id)
 
+@login_required
 def assoc_accessory(request, pop_id, accessory_id):
   Pop.objects.get(id=pop_id).accessorys.add(accessory_id)
   return redirect('detail', pop_id=pop_id)
 
+@login_required
 def unassoc_accessory(request, pop_id, accessory_id):
   Pop.objects.get(id=pop_id).accessorys.remove(accessory_id)
   return redirect('detail', pop_id=pop_id)
 
+@login_required
 def add_photo(request, pop_id):
     # photo-file will be the "name" attribute on the <input type="file">
     photo_file = request.FILES.get('photo-file', None)
@@ -99,6 +117,25 @@ def add_photo(request, pop_id):
         except:
             print('An error occurred uploading file to S3')
     return redirect('detail', pop_id=pop_id)
+
+def signup(request):
+  error_message = ''
+  if request.method == 'POST':
+    # This is how to create a 'user' form object
+    # that includes the data from the browser
+    form = UserCreationForm(request.POST)
+    if form.is_valid():
+      # This will add the user to the database
+      user = form.save()
+      # This is how we log a user in via code
+      login(request, user)
+      return redirect('index')
+    else:
+      error_message = 'Invalid sign up - try again'
+  # A bad POST or a GET request, so render signup.html with an empty form
+  form = UserCreationForm()
+  context = {'form': form, 'error_message': error_message}
+  return render(request, 'registration/signup.html', context)
 
 
 class AccessoryList(ListView):
